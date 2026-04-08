@@ -34,7 +34,7 @@ jobs:
           yarn gulp localConfig.findOrCreate
           yarn gulp translations.fullBuild
 
-      - name: Build Web Version
+      - name: Build Resources & JS
         run: |
           cd gulp
           yarn gulp build.web-localhost.resourcesAndCode
@@ -50,6 +50,47 @@ jobs:
           SHAPEZ_CLI_APPLE_CERT_NAME: x
           SHAPEZ_CLI_GITHUB_USER: x
           SHAPEZ_CLI_GITHUB_TOKEN: x
+
+      - name: Build CSS
+        run: |
+          cd gulp
+          yarn gulp css.prod
+        env:
+          SHAPEZ_CLI_SERVER_HOST: localhost
+          SHAPEZ_CLI_ALPHA_FTP_USER: x
+          SHAPEZ_CLI_ALPHA_FTP_PW: x
+          SHAPEZ_CLI_STAGING_FTP_USER: x
+          SHAPEZ_CLI_STAGING_FTP_PW: x
+          SHAPEZ_CLI_LIVE_FTP_USER: x
+          SHAPEZ_CLI_LIVE_FTP_PW: x
+          SHAPEZ_CLI_APPLE_ID: x
+          SHAPEZ_CLI_APPLE_CERT_NAME: x
+          SHAPEZ_CLI_GITHUB_USER: x
+          SHAPEZ_CLI_GITHUB_TOKEN: x
+
+      - name: Build HTML
+        run: |
+          cd gulp
+          yarn gulp html.web-localhost.prod
+        env:
+          SHAPEZ_CLI_SERVER_HOST: localhost
+          SHAPEZ_CLI_ALPHA_FTP_USER: x
+          SHAPEZ_CLI_ALPHA_FTP_PW: x
+          SHAPEZ_CLI_STAGING_FTP_USER: x
+          SHAPEZ_CLI_STAGING_FTP_PW: x
+          SHAPEZ_CLI_LIVE_FTP_USER: x
+          SHAPEZ_CLI_LIVE_FTP_PW: x
+          SHAPEZ_CLI_APPLE_ID: x
+          SHAPEZ_CLI_APPLE_CERT_NAME: x
+          SHAPEZ_CLI_GITHUB_USER: x
+          SHAPEZ_CLI_GITHUB_TOKEN: x
+
+      - name: List build output
+        run: |
+          echo "=== build/ ==="
+          find build/ -type f | head -30
+          echo "=== sizes ==="
+          du -sh build/
 
       - name: Upload Web Build Artifact
         uses: actions/upload-artifact@v4
