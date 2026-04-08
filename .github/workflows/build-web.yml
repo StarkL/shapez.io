@@ -1,0 +1,53 @@
+name: Build Web Version
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-web:
+    name: Build shapez.io Web
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg default-jre
+
+      - name: Setup Node 16
+        uses: actions/setup-node@v4
+        with:
+          node-version: 16
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies (root)
+        run: yarn install --frozen-lockfile
+
+      - name: Install Dependencies (gulp)
+        run: cd gulp && yarn install --frozen-lockfile
+
+      - name: Build Web Version
+        run: |
+          cd gulp
+          yarn gulp build.web-localhost.resourcesAndCode
+        env:
+          SHAPEZ_CLI_SERVER_HOST: localhost
+          SHAPEZ_CLI_ALPHA_FTP_USER: x
+          SHAPEZ_CLI_ALPHA_FTP_PW: x
+          SHAPEZ_CLI_STAGING_FTP_USER: x
+          SHAPEZ_CLI_STAGING_FTP_PW: x
+          SHAPEZ_CLI_LIVE_FTP_USER: x
+          SHAPEZ_CLI_LIVE_FTP_PW: x
+          SHAPEZ_CLI_APPLE_ID: x
+          SHAPEZ_CLI_APPLE_CERT_NAME: x
+          SHAPEZ_CLI_GITHUB_USER: x
+          SHAPEZ_CLI_GITHUB_TOKEN: x
+
+      - name: Upload Web Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: shapez-web-build
+          path: build/
+          retention-days: 7
