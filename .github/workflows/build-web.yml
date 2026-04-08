@@ -22,55 +22,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Dependencies (root)
-        run: yarn install --frozen-lockfile
-
-      - name: Install Dependencies (gulp)
-        run: cd gulp && yarn install --frozen-lockfile
+      - name: Install Dependencies
+        run: |
+          yarn install --frozen-lockfile
+          cd gulp && yarn install --frozen-lockfile
 
       - name: Generate Local Config & Translations
-        run: |
-          cd gulp
-          yarn gulp localConfig.findOrCreate
-          yarn gulp translations.fullBuild
+        run: cd gulp && yarn gulp localConfig.findOrCreate && yarn gulp translations.fullBuild
 
-      - name: Build Resources & JS
+      - name: Build All (Resources + JS + CSS + HTML)
         run: |
           cd gulp
           yarn gulp build.web-localhost.resourcesAndCode
-        env:
-          SHAPEZ_CLI_SERVER_HOST: localhost
-          SHAPEZ_CLI_ALPHA_FTP_USER: x
-          SHAPEZ_CLI_ALPHA_FTP_PW: x
-          SHAPEZ_CLI_STAGING_FTP_USER: x
-          SHAPEZ_CLI_STAGING_FTP_PW: x
-          SHAPEZ_CLI_LIVE_FTP_USER: x
-          SHAPEZ_CLI_LIVE_FTP_PW: x
-          SHAPEZ_CLI_APPLE_ID: x
-          SHAPEZ_CLI_APPLE_CERT_NAME: x
-          SHAPEZ_CLI_GITHUB_USER: x
-          SHAPEZ_CLI_GITHUB_TOKEN: x
-
-      - name: Build CSS
-        run: |
-          cd gulp
           yarn gulp css.prod
-        env:
-          SHAPEZ_CLI_SERVER_HOST: localhost
-          SHAPEZ_CLI_ALPHA_FTP_USER: x
-          SHAPEZ_CLI_ALPHA_FTP_PW: x
-          SHAPEZ_CLI_STAGING_FTP_USER: x
-          SHAPEZ_CLI_STAGING_FTP_PW: x
-          SHAPEZ_CLI_LIVE_FTP_USER: x
-          SHAPEZ_CLI_LIVE_FTP_PW: x
-          SHAPEZ_CLI_APPLE_ID: x
-          SHAPEZ_CLI_APPLE_CERT_NAME: x
-          SHAPEZ_CLI_GITHUB_USER: x
-          SHAPEZ_CLI_GITHUB_TOKEN: x
-
-      - name: Build HTML
-        run: |
-          cd gulp
           yarn gulp html.web-localhost.prod
         env:
           SHAPEZ_CLI_SERVER_HOST: localhost
@@ -85,11 +49,30 @@ jobs:
           SHAPEZ_CLI_GITHUB_USER: x
           SHAPEZ_CLI_GITHUB_TOKEN: x
 
-      - name: List build output
+      - name: Collect all build outputs
         run: |
-          echo "=== build/ ==="
-          find build/ -type f | head -30
-          echo "=== sizes ==="
+          echo "=== Searching for index.html ==="
+          find . -name "index.html" -not -path "*/node_modules/*" | head -10
+          echo "=== Searching for main.css ==="
+          find . -name "main.css" -not -path "*/node_modules/*" | head -10
+          echo "=== Searching for *.css in build ==="
+          find build/ -name "*.css" 2>/dev/null | head -10
+          echo "=== All HTML files ==="
+          find . -name "*.html" -not -path "*/node_modules/*" | head -20
+          echo "=== Copy missing files to build/ ==="
+          # Copy index.html if found outside build/
+          for f in $(find . -name "index.html" -not -path "*/node_modules/*" -not -path "./build/*"); do
+            echo "Copying $f to build/"
+            cp "$f" build/
+          done
+          # Copy main.css if found outside build/
+          for f in $(find . -name "main.css" -not -path "*/node_modules/*" -not -path "./build/*"); do
+            echo "Copying $f to build/"
+            cp "$f" build/
+          done
+          echo "=== Final build/ ==="
+          find build/ -type f | sort | head -50
+          echo "=== Size ==="
           du -sh build/
 
       - name: Upload Web Build Artifact
