@@ -28,6 +28,12 @@ jobs:
       - name: Install Dependencies (gulp)
         run: cd gulp && yarn install --frozen-lockfile
 
+      - name: Generate Local Config & Translations
+        run: |
+          cd gulp
+          yarn gulp localConfig.findOrCreate
+          yarn gulp translations.fullBuild
+
       - name: Build Web Version
         run: |
           cd gulp
